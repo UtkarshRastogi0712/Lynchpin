@@ -4,9 +4,16 @@ const createError = require("http-errors");
 require("dotenv").config();
 require("./Helpers/database");
 
+const AuthRoutes = require("./Routes/Auth.route");
+
 const app = express();
 app.use(morgan("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 const PORT = process.env.PORT || 3000;
+
+app.use("/auth", AuthRoutes);
 
 app.get("/", async (req, res, next) => {
   res.send("It works!");
