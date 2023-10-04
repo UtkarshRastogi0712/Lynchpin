@@ -1,5 +1,6 @@
 const createError = require("http-errors");
-const User = require("../Models/User.model");
+const Joi = require("@hapi/joi");
+const authSchema = require("../Helpers/req.validators").authSchema;
 const {
   registerService,
   findUserByEmail,
@@ -7,16 +8,16 @@ const {
 
 const registerController = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      throw createError.BadRequest();
-    }
-    const doesExist = await findUserByEmail(email);
+    const result = await authSchema.validateAsync(req.body);
+    const doesExist = await findUserByEmail(result.email);
     if (doesExist) {
-      throw createError.Conflict(`${email} is already registered`);
+      throw createError.Conflict(`${result.email} is already registered`);
     }
-    registerService(name, email, password, res);
+    registerService(result.name, result.email, result.password, res);
   } catch (error) {
+    if (error.isJoi === true) {
+      error.status = 422;
+    }
     next(error);
   }
 };
