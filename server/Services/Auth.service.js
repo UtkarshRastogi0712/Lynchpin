@@ -5,7 +5,7 @@ const registerService = async (name, email, password, callback) => {
   try {
     const user = new User({ name, email, password });
     const savedUser = await user.save();
-    callback.send(savedUser);
+    return savedUser;
   } catch (error) {
     throw createError.InternalServerError();
   }
