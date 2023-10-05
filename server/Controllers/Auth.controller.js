@@ -1,6 +1,6 @@
 const createError = require("http-errors");
 const Joi = require("@hapi/joi");
-const authSchema = require("../Helpers/req.validators").authSchema;
+const { authSchema, loginSchema } = require("../Helpers/req.validators");
 const signAccessToken = require("../Helpers/token").signAccessToken;
 const {
   registerService,
@@ -30,7 +30,27 @@ const registerController = async (req, res, next) => {
 };
 
 const loginController = async (req, res, next) => {
-  res.send("Login route");
+  try {
+    const result = await loginSchema.validateAsync(req.body);
+    const user = await findUserByEmail(result.email);
+    if (!user) {
+      throw createError.NotFound("User not found");
+    }
+    const isMatch = await user.isValidPassword(result.password);
+    if (!isMatch) {
+      throw createError.Unauthorized("Email or password not valid");
+    }
+    const accessToken = await signAccessToken(user);
+    res.send(accessToken);
+  } catch (error) {
+    console.error(error);
+    if (error.isJoi === true) {
+      return next(
+        createError.BadRequest("Invalid username, email or password")
+      );
+    }
+    next(error);
+  }
 };
 
 const refreshTokenController = async (req, res, next) => {

@@ -11,9 +11,9 @@ const registerService = async (name, email, password, callback) => {
   }
 };
 
-const findUserByEmail = async (email) => {
+const findUserByEmail = async (userEmail) => {
   try {
-    return await User.findOne({ email: email });
+    return await User.findOne({ email: userEmail });
   } catch (err) {
     throw createError.InternalServerError();
   }
