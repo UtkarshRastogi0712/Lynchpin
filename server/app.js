@@ -3,6 +3,7 @@ const morgan = require("morgan");
 const createError = require("http-errors");
 require("dotenv").config();
 require("./Helpers/database");
+const { verifyAccessToken } = require("./Helpers/token");
 
 const AuthRoutes = require("./Routes/Auth.route");
 
@@ -15,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use("/auth", AuthRoutes);
 
-app.get("/", async (req, res, next) => {
+app.get("/", verifyAccessToken, async (req, res, next) => {
   res.send("It works!");
 });
 
