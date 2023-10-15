@@ -1,7 +1,11 @@
 const createError = require("http-errors");
 const Joi = require("@hapi/joi");
 const { authSchema, loginSchema } = require("../Helpers/req.validators");
-const signAccessToken = require("../Helpers/token").signAccessToken;
+const {
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken,
+} = require("../Helpers/token");
 const {
   registerService,
   findUserByEmail,
@@ -20,7 +24,8 @@ const registerController = async (req, res, next) => {
       result.password
     );
     const accessToken = await signAccessToken(savedUser);
-    res.send({ accessToken });
+    const refreshToken = await signRefreshToken(savedUser);
+    res.send({ accessToken, refreshToken });
   } catch (error) {
     if (error.isJoi === true) {
       error.status = 422;
@@ -54,7 +59,18 @@ const loginController = async (req, res, next) => {
 };
 
 const refreshTokenController = async (req, res, next) => {
-  res.send("Refresh token route");
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      throw createError.BadRequest();
+    }
+    const userId = await verifyRefreshToken(refreshToken);
+    const accessToken = await signAccessToken(userId);
+    const refToken = await signRefreshToken(userId);
+    res.send({ accessToken: accessToken, refreshToken: refToken });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const logoutController = async (req, res, next) => {

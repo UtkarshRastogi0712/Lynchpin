@@ -3,7 +3,7 @@ const morgan = require("morgan");
 const createError = require("http-errors");
 require("dotenv").config();
 require("./Helpers/database");
-const { verifyAccessToken } = require("./Helpers/token");
+const { verifyAccessToken, signRefreshToken } = require("./Helpers/token");
 
 const AuthRoutes = require("./Routes/Auth.route");
 
